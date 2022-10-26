@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+  td {
+    text-align: center;
+  }
+
+  .hline {
+    display: block;
+    width: 3em;
+    height: 1px;
+    background-color: #444;
+  }
+
+  .operator {
+    width: 1em;
+  }
+
+  .answer {
+    width: 2em;
+    text-align: center;
+  }
+</style>
+<h2 class="current-question-index"></h2>
+<p>
+  <table>
+    <tr>
+      <td class="number"></td>
+      <td></td>
+      <td class="number"></td>
+      <td></td>
+      <td><input class="answer"></td>
+    </tr>
+    <tr>
+      <td><span class="hline"></span></td>
+      <td class="operator"></td>
+      <td><span class="hline"></span></td>
+      <td>=</td>
+      <td><span class="hline"></span></td>
+    </tr>
+    <tr>
+      <td class="number"></td>
+      <td></td>
+      <td class="number"></td>
+      <td></td>
+      <td><input class="answer"></td>
+    </tr>
+  </table>
+</p>
+<p>
+  <div class="time"></div>
+</p>
+<script>
+  const questions = [
+    // A
+    [1, 2, "-", 1, 3],
+    [1, 3, "-", 1, 4],
+    [1, 4, "-", 1, 5],
+    [1, 5, "-", 1, 6],
+    [1, 6, "-", 1, 7],
+    [1, 7, "-", 1, 8],
+    [1, 8, "-", 1, 9],
+    [1, 2, "-", 1, 5],
+    [1, 2, "-", 1, 7],
+    [1, 3, "-", 1, 5],
+    [1, 3, "-", 1, 7],
+    [1, 3, "-", 1, 8],
+    [1, 4, "-", 1, 7],
+    [1, 5, "-", 1, 8],
+    [1, 5, "-", 1, 9],
+    // B
+    [1, 2, "+", 1, 3],
+    [1, 3, "+", 1, 4],
+    [1, 4, "+", 1, 5],
+    [1, 5, "+", 1, 6],
+    [1, 6, "+", 1, 7],
+    [1, 7, "+", 1, 8],
+    [1, 8, "+", 1, 9],
+    [1, 2, "+", 1, 5],
+    [1, 2, "+", 1, 7],
+    [1, 3, "+", 1, 5],
+    [1, 3, "+", 1, 7],
+    [1, 3, "+", 1, 8],
+    [1, 4, "+", 1, 7],
+    [1, 5, "+", 1, 8],
+    [1, 5, "+", 1, 9],
+    // C
+    [3, 2, "-", 1, 3],
+    [2, 3, "-", 1, 2],
+    [3, 4, "-", 1, 3],
+    [2, 5, "-", 1, 3],
+    [3, 5, "-", 1, 4],
+    [4, 5, "-", 1, 2],
+    [5, 6, "-", 1, 5],
+    [2, 7, "-", 1, 2],
+    [3, 7, "-", 1, 3],
+    [4, 7, "-", 1, 2],
+    [5, 7, "-", 2, 3],
+    [4, 3, "-", 3, 5],
+    [3, 4, "-", 2, 3],
+    [3, 2, "-", 2, 3],
+    [7, 5, "-", 3, 4],
+    // D
+    [3, 2, "+", 1, 3],
+    [2, 3, "+", 3, 2],
+    [3, 4, "+", 1, 3],
+    [2, 5, "+", 3, 4],
+    [3, 5, "+", 2, 3],
+    [4, 5, "+", 3, 4],
+    [2, 3, "+", 3, 4],
+    [3, 4, "+", 4, 3],
+    [3, 5, "+", 2, 7],
+    [2, 5, "+", 3, 2],
+    [4, 3, "+", 2, 5],
+    [2, 3, "+", 4, 5],
+    [3, 4, "+", 2, 7],
+    [3, 5, "+", 2, 3],
+    [2, 5, "+", 5, 3],
+  ];
+  function setQuestion(index) {
+    document.querySelector(".current-question-index").innerHTML =
+      `${index + 1}問目（全${questions.length}問）`;
+    const question = questions[index];
+    const numberElms = document.querySelectorAll(".number");
+    numberElms[0].innerHTML = question[0];
+    numberElms[1].innerHTML = question[3];
+    numberElms[2].innerHTML = question[1];
+    numberElms[3].innerHTML = question[4];
+    document.querySelector(".operator").innerHTML = question[2];
+    const answerElms = document.querySelectorAll(".answer");
+    answerElms[0].value = "";
+    answerElms[1].value = "";
+  }
+
+  function gcm(n0, n1) {
+    const r = n0 % n1;
+    return r == 0 ? n1 : gcm(n1, r);
+  }
+
+  function calcAnswer(question) {
+    const sign = question[2] == "-" ? -1 : +1;
+    const d = question[0] * question[4] + sign * question[3] * question[1];
+    const n = question[1] * question[4];
+    const g = gcm(Math.abs(d), n);
+    return [d / g, n / g];
+  }
+
+  function checkAnswer(index) {
+    const question = questions[index];
+    const answerElms = document.querySelectorAll(".answer");
+    const userAnsD = Number(answerElms[0].value);
+    const userAnsN = Number(answerElms[1].value);
+    const ans = calcAnswer(question);
+    return userAnsD == ans[0] && userAnsN == ans[1];
+  }
+
+  onload = () => {
+    let currentQuestionIndex = 0;
+    const answerElms = document.querySelectorAll(".answer");
+    answerElms[0].focus();
+    answerElms[0].onkeydown = (e) => {
+      if (e.code == "Enter") {
+        answerElms[1].value = "";
+        answerElms[1].focus();
+      }
+    };
+    answerElms[1].onkeydown = (e) => {
+      if (e.code == "Enter") {
+        answerElms[0].value = "";
+        answerElms[0].focus();
+      }
+    };
+    const startTime = Date.now();
+    setQuestion(currentQuestionIndex);
+    setInterval(() => {
+      if (currentQuestionIndex == questions.length) {
+        return;
+      }
+      if (checkAnswer(currentQuestionIndex)) {
+        currentQuestionIndex++;
+        if (currentQuestionIndex < questions.length) {
+          setQuestion(currentQuestionIndex);
+        } else {
+          document.querySelector(".current-question-index").innerHTML = "終了";
+        }
+      }
+      document.querySelector(".time").innerHTML =
+        `経過時間（秒）：${(Date.now() - startTime) / 1000}`;
+    }, 100);
+  };
+</script>
+
